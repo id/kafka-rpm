@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# kafka Kafka Server
+#
+# chkconfig: - 80 05
+# description: Enable kafka server
+#
+
+### BEGIN INIT INFO
+# Provides:          kafka
+# Default-Start:
+# Default-Stop:
+# Required-Start:    $remote_fs $network
+# Required-Stop:     $remote_fs $network
+# Description:       kafka server
+# Short-Description: Enable kafka server
+### END INIT INFO
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+prog=kafka
+kafka_user=kafka
+kafka_home=$(getent passwd $kafka_user | cut -d: -f6)
+
+[ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+
+lockfile="/var/lock/subsys/$prog"
+pidfile="/var/run/$prog.pid"
+
+start() {
+    echo -n "Starting Kafka: "
+    touch $pidfile && chown $kafka_user $pidfile
+    /sbin/runuser $kafka_user -c "$kafka_home/bin/kafka-server-start.sh -daemon $kafka_home/config/server.properties"
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && { touch $lockfile; success; } || failure
+    return $retval
+}
+
+stop() {
+    echo -n $"Stopping Kafka: "
+    killproc -p $pidfile $prog
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && { rm -f $lockfile; success; } || failure
+    return $retval
+}
+
+restart() {
+    stop
+    start
+}
+
+reload() {
+    restart
+}
+
+get_status() {
+    status -p $pidfile $prog
+    retval=$?
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    reload)
+        reload
+        ;;
+    condrestart)
+        [ -e /var/lock/subsys/$prog ] && restart
+        retval=$?
+        ;;
+    status)
+        get_status
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|reload|condrestart|status}"
+        retval=1
+esac
+
+exit $retval
