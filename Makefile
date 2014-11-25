@@ -24,7 +24,6 @@ $(TOPDIR)/SOURCES/$(TARBALL): $(TOPDIR)
 	@spectool \
 			--define "version $(VERSION)" \
 			--define "tarball $(TARBALL)" \
-			--define "_topdir $(TOPDIR)" \
 			-C $(TOPDIR)/SOURCES \
 			-g kafka.spec
 
