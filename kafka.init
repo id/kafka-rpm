@@ -33,8 +33,8 @@ start() {
     touch $pidfile && chown $kafka_user $pidfile
     /sbin/runuser $kafka_user -c "$kafka_home/bin/kafka-server-start.sh -daemon $kafka_home/config/server.properties"
     retval=$?
-    echo
     [ $retval -eq 0 ] && { touch $lockfile; success; } || failure
+    echo
     return $retval
 }
 
@@ -42,8 +42,8 @@ stop() {
     echo -n $"Stopping Kafka: "
     killproc -p $pidfile $prog
     retval=$?
-    echo
     [ $retval -eq 0 ] && { rm -f $lockfile; success; } || failure
+    echo
     return $retval
 }
 

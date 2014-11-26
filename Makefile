@@ -27,7 +27,7 @@ $(TOPDIR)/SOURCES/$(TARBALL): $(TOPDIR)
 			-C $(TOPDIR)/SOURCES \
 			-g kafka.spec
 
-$(TOPDIR)/SOURCES/kafka.init: $(TOPDIR)/SOURCES
+$(TOPDIR)/SOURCES/kafka.init: $(TOPDIR)/SOURCES kafka.init
 	cp kafka.init $(TOPDIR)/SOURCES/
 
 $(TOPDIR):
