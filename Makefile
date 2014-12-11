@@ -21,7 +21,8 @@ rpm: $(TARBALL)
 			kafka.spec
 
 clean:
-	@rm -rf $(TOPDIR)
+	@rm -rf $(TOPDIR) x86_64
+	@rm -f $(TARBALL)
 
 $(TARBALL):
 	@spectool \
