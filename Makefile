@@ -8,30 +8,22 @@ TARBALL = $(TARBALL_NAME).tgz
 TOPDIR = /tmp/kafka-rpm
 PWD = $(shell pwd)
 
-rpm: $(TOPDIR)/SOURCES/$(TARBALL) $(TOPDIR)/SOURCES/kafka.init
+rpm: $(TARBALL)
 	@rpmbuild -v -bb \
 			--define "version $(VERSION)" \
 			--define "tarball $(TARBALL)" \
 			--define "tarball_name $(TARBALL_NAME)" \
+			--define "_sourcedir $(PWD)" \
+			--define "_rpmdir $(PWD)" \
 			--define "_topdir $(TOPDIR)" \
 			kafka.spec
-	@mv $(TOPDIR)/RPMS/x86_64/*.rpm ./
 
 clean:
 	@rm -rf $(TOPDIR)
 
-$(TOPDIR)/SOURCES/$(TARBALL): $(TOPDIR)
+$(TARBALL):
 	@spectool \
 			--define "version $(VERSION)" \
 			--define "tarball $(TARBALL)" \
-			-C $(TOPDIR)/SOURCES \
 			-g kafka.spec
 
-$(TOPDIR)/SOURCES/kafka.init: $(TOPDIR)/SOURCES kafka.init
-	cp kafka.init $(TOPDIR)/SOURCES/
-
-$(TOPDIR):
-	@mkdir -p $(TOPDIR)
-
-$(TOPDIR)/SOURCES:
-	@mkdir -p $(TOPDIR)/SOURCES
