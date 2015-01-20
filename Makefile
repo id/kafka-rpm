@@ -2,7 +2,7 @@
 
 KAFKA_VERSION ?= 0.8.1.1
 SCALA_VERSION ?= 2.9.2
-VERSION = $(KAFKA_VERSION)
+VERSION = $(shell echo $(KAFKA_VERSION) | sed "s/-/_/")
 BUILD_NUMBER ?= 1
 TARBALL_NAME = kafka_$(SCALA_VERSION)-$(KAFKA_VERSION)
 TARBALL = $(TARBALL_NAME).tgz
@@ -12,6 +12,7 @@ PWD = $(shell pwd)
 rpm: $(TARBALL)
 	@rpmbuild -v -bb \
 			--define "version $(VERSION)" \
+			--define "kafka_version $(KAFKA_VERSION)" \
 			--define "build_number $(BUILD_NUMBER)" \
 			--define "tarball $(TARBALL)" \
 			--define "tarball_name $(TARBALL_NAME)" \
@@ -27,6 +28,7 @@ clean:
 $(TARBALL):
 	@spectool \
 			--define "version $(VERSION)" \
+			--define "kafka_version $(KAFKA_VERSION)" \
 			--define "tarball $(TARBALL)" \
 			-g kafka.spec
 

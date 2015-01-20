@@ -8,10 +8,10 @@ Version: %{version}
 Release: %{build_number}
 License: Apache License, Version 2.0
 Group: Applications
-Source0: http://apache.mirrors.spacedump.net/kafka/%{version}/%{tarball}
+Source0: http://apache.mirrors.spacedump.net/kafka/%{kafka_version}/%{tarball}
 Source1: kafka.init
 URL: http://kafka.apache.org/
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
+BuildRoot: %{_tmppath}/%{name}-%{kafka_version}-root
 Prefix: /opt
 Vendor: Apache Software Foundation
 Packager: Ivan Dyachkov <ivan.dyachkov@klarna.com>
@@ -24,7 +24,7 @@ Kafka is designed to allow a single cluster to serve as the central data backbon
 %setup -n %{tarball_name}
 
 %build
-rm libs/{kafka_*-javadoc.jar,kafka_*-scaladoc.jar,kafka_*-sources.jar,*.asc}
+rm -f libs/{kafka_*-javadoc.jar,kafka_*-scaladoc.jar,kafka_*-sources.jar,*.asc}
 rm config/zookeeper.properties
 
 %install
