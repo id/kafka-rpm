@@ -19,19 +19,82 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
+daemon_user=kafka
+daemon_home=$(getent passwd $daemon_user | cut -d: -f6)
 prog=kafka
-kafka_user=kafka
-kafka_home=$(getent passwd $kafka_user | cut -d: -f6)
+pidfile="/var/run/$prog.pid"
+lockfile="/var/lock/subsys/$prog.lock"
 
+# override variables listed down below in /etc/sysconfig/kafka
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 
-lockfile="/var/lock/subsys/$prog"
-pidfile="/var/run/$prog.pid"
+# Setting up classpath
+for file in $daemon_home/libs/*.jar;
+do
+  CLASSPATH=$CLASSPATH:$file
+done
+
+if [ -z $KAFKA_SERVER_CONFIG ]; then
+    KAFKA_SERVER_CONFIG=$daemon_home/config/server.properties
+fi
+
+if [ -z $LOG_DIR ]; then
+    LOG_DIR=$daemon_home/logs
+    [ -d $LOG_DIR ] || mkdir $LOG_DIR
+fi
+
+if [ -z "$SCALA_VERSION" ]; then
+    SCALA_VERSION=2.8.0
+fi
+
+# JMX settings
+if [ -z "$KAFKA_JMX_OPTS" ]; then
+  KAFKA_JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false "
+fi
+
+# JMX port to use
+if [ $JMX_PORT ]; then
+  KAFKA_JMX_OPTS="$KAFKA_JMX_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT "
+fi
+
+# Log4j settings
+if [ -z $KAFKA_LOG4J_OPTS ]; then
+    KAFKA_LOG4J_OPTS="-Dlog4j.configuration=file:$daemon_home/config/log4j.properties"
+fi
+
+# Generic jvm settings you want to add
+if [ -z "$KAFKA_OPTS" ]; then
+  KAFKA_OPTS=""
+fi
+
+# Which java to use
+if [ -z "$JAVA_HOME" ]; then
+  JAVA="java"
+else
+  JAVA="$JAVA_HOME/bin/java"
+fi
+
+# Memory options
+if [ -z $KAFKA_HEAP_OPTS ]; then
+    KAFKA_HEAP_OPTS="-Xmx1G -Xms1G"
+fi
+
+# JVM performance options
+if [ -z "$KAFKA_JVM_PERFORMANCE_OPTS" ]; then
+  KAFKA_JVM_PERFORMANCE_OPTS="-server -XX:+UseCompressedOops -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled -XX:+CMSScavengeBeforeRemark -XX:+DisableExplicitGC -Djava.awt.headless=true"
+fi
+
+CONSOLE_OUTPUT_FILE=$LOG_DIR/kafkaServer.out
+GC_LOG_FILE_NAME=kafkaServer-gc.log
+KAFKA_GC_LOG_OPTS="-Xloggc:$LOG_DIR/$GC_LOG_FILE_NAME -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps "
+
+OPTS="$KAFKA_HEAP_OPTS $KAFKA_JVM_PERFORMANCE_OPTS $KAFKA_GC_LOG_OPTS $KAFKA_JMX_OPTS $KAFKA_LOG4J_OPTS -cp $CLASSPATH $KAFKA_OPTS kafka.Kafka"
 
 start() {
-    echo -n "Starting Kafka: "
-    touch $pidfile && chown $kafka_user $pidfile
-    /sbin/runuser $kafka_user -c "$kafka_home/bin/kafka-server-start.sh -daemon $kafka_home/config/server.properties"
+    __pids_var_run $prog $pidfile && { echo "$prog is already running"; exit 0; }
+    echo -n $"Starting $prog: "
+    touch $pidfile && chown $daemon_user $pidfile
+    /sbin/runuser -s /bin/bash $daemon_user -c "nohup $JAVA $OPTS $KAFKA_SERVER_CONFIG > $CONSOLE_OUTPUT_FILE 2>&1 & echo \$! > $pidfile"
     retval=$?
     [ $retval -eq 0 ] && { touch $lockfile; success; } || failure
     echo
@@ -39,7 +102,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping Kafka: "
+    echo -n $"Stopping $prog: "
     killproc -p $pidfile $prog
     retval=$?
     [ $retval -eq 0 ] && { rm -f $lockfile; success; } || failure
@@ -75,7 +138,7 @@ case "$1" in
         reload
         ;;
     condrestart)
-        [ -e /var/lock/subsys/$prog ] && restart
+        [ -e $lockfile ] && restart
         retval=$?
         ;;
     status)
@@ -87,3 +150,4 @@ case "$1" in
 esac
 
 exit $retval
+
