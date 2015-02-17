@@ -35,6 +35,7 @@ cp -r libs $RPM_BUILD_ROOT%{_prefix}/kafka/
 cp -r config $RPM_BUILD_ROOT%{_prefix}/kafka/
 mkdir -p $RPM_BUILD_ROOT/etc/rc.d/init.d
 install -m 755 %{S:1} $RPM_BUILD_ROOT/etc/rc.d/init.d/kafka
+mkdir -p $RPM_BUILD_ROOT/var/log/kafka
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -73,6 +74,8 @@ fi
 %attr(0755,kafka,kafka) /opt/kafka/libs
 %config(noreplace) %attr(755,kafka,kafka) /opt/kafka/config
 %attr(0775,root,kafka) /etc/rc.d/init.d/kafka
+%attr(0755,kafka,kafka) %dir /var/log/kafka
+
 %doc NOTICE
 %doc LICENSE
 
