@@ -5,7 +5,7 @@
 Summary: Apache Kafka is publish-subscribe messaging rethought as a distributed commit log.
 Name: kafka
 Version: %{version}
-Release: %{build_number}
+Release: %{build_number}%{?dist}
 License: Apache License, Version 2.0
 Group: Applications
 Source0: http://apache.mirrors.spacedump.net/kafka/%{kafka_version}/%{tarball}
