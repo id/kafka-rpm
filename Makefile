@@ -1,6 +1,6 @@
 .PHONY:	rpm clean
 
-KAFKA_VERSION ?= 0.11.0.1
+KAFKA_VERSION ?= 0.11.0.2
 SCALA_VERSION ?= 2.12
 VERSION = $(shell echo $(KAFKA_VERSION) | sed "s/-/_/")
 BUILD_NUMBER ?= 1
@@ -31,4 +31,3 @@ $(TARBALL):
 			--define "kafka_version $(KAFKA_VERSION)" \
 			--define "tarball $(TARBALL)" \
 			-g kafka.spec
-
