@@ -6,10 +6,12 @@ VERSION = $(shell echo $(KAFKA_VERSION) | sed "s/-/_/")
 BUILD_NUMBER ?= 1
 TARBALL_NAME = kafka_$(SCALA_VERSION)-$(KAFKA_VERSION)
 TARBALL = $(TARBALL_NAME).tgz
+TARBALL_URL = https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/${TARBALL}
 TOPDIR = /tmp/kafka-rpm
 PWD = $(shell pwd)
 
-rpm: $(TARBALL)
+rpm:
+	@wget "${TARBALL_URL}" -O ${TARBALL}
 	@rpmbuild -v -bb \
 			--define "version $(VERSION)" \
 			--define "kafka_version $(KAFKA_VERSION)" \
@@ -31,4 +33,3 @@ $(TARBALL):
 			--define "kafka_version $(KAFKA_VERSION)" \
 			--define "tarball $(TARBALL)" \
 			-g kafka.spec
-
