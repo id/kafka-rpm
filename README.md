@@ -8,7 +8,8 @@ Setup
 
 Building
 --------
-    $ make rpm
+	check [https://archive.apache.org/dist/kafka/](https://archive.apache.org/dist/kafka/) for supported versions.
+    $ make rpm KAFKA_VERSION=1.0.2 SCALA_VERSION=2.12
 
 Resulting RPM will be avaliable at $(shell pwd)
 
