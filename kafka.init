@@ -117,7 +117,7 @@ start() {
 
 stop() {
     echo -n $"Stopping $PROG: "
-    killproc -p $PIDFILE $PROG
+    killproc -p $PIDFILE -d 600 $PROG
     RETVAL=$?
     [ $RETVAL -eq 0 ] && { rm -f $LOCKFILE; success; } || failure
     echo
